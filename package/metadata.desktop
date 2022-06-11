@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Kimpanel in KWin
+Comment=Input method panel, but in KWin.
+Icon=draw-freehand
+
+X-KDE-PluginInfo-Author=Rocket Aaron
+X-KDE-PluginInfo-Email=i@rocka.me
+X-KDE-PluginInfo-Name=kwin_impanel
+X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-License=GPL
+
+Type=Service
+X-KDE-ServiceTypes=KWin/Script
+X-Plasma-API=declarativescript
+X-Plasma-MainScript=ui/main.qml
