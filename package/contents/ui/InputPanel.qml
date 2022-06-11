@@ -6,10 +6,10 @@
 
 import QtQuick 2.6
 import QtQuick.Layouts 1.1
-import org.kde.plasma.plasmoid 2.0
 import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.plasma.private.kimpanel 0.1 as Kimpanel
+import org.kde.kwin 2.0
 
 
 PlasmaCore.Dialog {
@@ -26,10 +26,10 @@ PlasmaCore.Dialog {
     }
     location: PlasmaCore.Types.Floating
     visible: helper.auxVisible || helper.preeditVisible || helper.lookupTableVisible
-    readonly property bool verticalLayout: (helper.lookupTableLayout === 1) || (helper.lookupTableLayout === 0 && plasmoid.configuration.vertical_lookup_table);
+    readonly property bool verticalLayout: (helper.lookupTableLayout === 1);
     property int highlightCandidate: helper.lookupTableCursor
     property int hoveredCandidate: -1
-    property font preferredFont: plasmoid.configuration.use_default_font ? PlasmaCore.Theme.defaultFont : plasmoid.configuration.font
+    property font preferredFont: PlasmaCore.Theme.defaultFont
     readonly property alias textOffset: fontMetrics.ascent
     readonly property alias labelHeight: fontMetrics.height
     property rect position: helper.spotRect
@@ -39,10 +39,12 @@ PlasmaCore.Dialog {
     onHeightChanged : updatePosition();
 
     mainItem: Item {
-        Layout.minimumWidth: childrenRect.width
-        Layout.minimumHeight: childrenRect.height
-        Layout.maximumWidth: childrenRect.width
-        Layout.maximumHeight: childrenRect.height
+        width: Math.max(textLabel.width, candidateGrid.width, 100)
+        height: Math.max(textLabel.height + candidateGrid.height, 100)
+        // Layout.minimumWidth: childrenRect.width
+        // Layout.minimumHeight: childrenRect.height
+        // Layout.maximumWidth: childrenRect.width
+        // Layout.maximumHeight: childrenRect.height
         FontMetrics {
             id: fontMetrics
             font: preferredFont
@@ -94,6 +96,7 @@ PlasmaCore.Dialog {
             }
 
             GridLayout {
+                id: candidateGrid
                 flow: inputpanel.verticalLayout ? GridLayout.TopToBottom : GridLayout.LeftToRight
                 columns: inputpanel.verticalLayout ? 1 : tableList.count + 1
                 rows: inputpanel.verticalLayout ? tableList.count + 1 : 1
@@ -215,18 +218,24 @@ PlasmaCore.Dialog {
             target: helper
 
             function onPreeditTextChanged() {
+                print("onPreeditTextChanged before textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
                 var charArray = [...helper.preeditText];
                 preeditLabel1.text = charArray.slice(0, helper.caretPos).join('');
                 preeditLabel2.text = charArray.slice(helper.caretPos).join('');
+                print("onPreeditTextChanged after textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
+
             }
 
             function onLookupTableChanged() {
+                print("onLookupTableChanged before textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
                 timer.restart();
+                print("onLookupTableChanged after textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
             }
         }
     }
 
     function updateLookupTable() {
+        print("updateLookupTable before textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
         inputpanel.hoveredCandidate = -1;
         button.visible = helper.lookupTableVisible && (helper.hasPrev || helper.hasNext);
 
@@ -249,9 +258,11 @@ PlasmaCore.Dialog {
         } else {
             tableList.clear();
         }
+        print("updateLookupTable after textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
     }
 
     function updatePosition() {
+        print("updatePosition before textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
         var rect = screen.geometryForPoint(position.x, position.y);
         var devicePerPixelRatio = screen.devicePixelRatioForPoint(position.x, position.y);
         var x, y;
@@ -285,5 +296,10 @@ PlasmaCore.Dialog {
 
         inputpanel.x = newRect.x + (x - newRect.x) / devicePerPixelRatio;
         inputpanel.y = newRect.y + (y - newRect.y) / devicePerPixelRatio;
+        print("updatePosition after textLabel:", textLabel.width, textLabel.height, "candidateGrid:", candidateGrid.width, candidateGrid.height)
+    }
+
+    Component.onCompleted: {
+        KWin.registerWindow(inputpanel);
     }
 }
